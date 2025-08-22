@@ -29,6 +29,12 @@
 				<div class="space-y-6">
 					<h2 class="text-4xl font-bold text-primary">Our Mission</h2>
 					<p class="text-lg text-base-content/70 leading-relaxed">
+						Africa's FinTech revolution is booming, from mobile money to digital banking — but with rapid innovation comes 
+						rising cyber threats. Phishing, SIM swaps, and fraud attacks erode trust and put financial inclusion at risk. 
+						We wanted to future-proof Africa's digital economy by creating a fun, accessible way to teach cybersecurity 
+						while showcasing how AI can adapt to evolving threats.
+
+
 						At CyberShield, we believe that cybersecurity education should be accessible, practical, and engaging. 
 						Our mission is to bridge the gap between theoretical knowledge and real-world application, 
 						empowering individuals to become skilled cybersecurity professionals.
