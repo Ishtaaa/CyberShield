@@ -1,6 +1,6 @@
 # 🛡️ CyberShield - Cybersecurity Learning Platform
 
-A modern, interactive cybersecurity learning platform built with SvelteKit, featuring dual themes and comprehensive learning resources.
+A modern, interactive cybersecurity learning platform built with SvelteKit, featuring dual themes, comprehensive learning resources, and AI-powered cybersecurity mentorship through OpenAI API integration.
 
 ## ✨ Features
 
@@ -11,12 +11,16 @@ A modern, interactive cybersecurity learning platform built with SvelteKit, feat
 - **Interactive Learning**: Hands-on labs and practical exercises
 - **Progress Tracking**: Monitor your cybersecurity learning journey
 - **Comprehensive Documentation**: Downloadable guides and resources
+- **🤖 AI-Powered Chatbot**: Floating chat interface with OpenAI GPT integration
+- **🎓 AI Cybersecurity Mentor**: Personalized guidance and instruction within learning labs
+- **🔒 Real-time Security Insights**: AI-powered threat analysis and recommendations
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
+- OpenAI API Key (for AI features)
 
 ### Installation
 
@@ -31,12 +35,21 @@ cd cybershield
 npm install
 ```
 
-3. Start the development server:
+3. Set up configuration:
+```bash
+# Copy the configuration template
+cp src/lib/config.template.ts src/lib/config.ts
+
+# Edit src/lib/config.ts and add your OpenAI API key
+# Get your API key from: https://platform.openai.com/api-keys
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+5. Open your browser and navigate to `http://localhost:5173`
 
 ## 🎨 Theme System
 
@@ -45,7 +58,28 @@ The application features two distinct themes that persist across page refreshes:
 - **Valentine Theme**: Soft, romantic color palette perfect for comfortable reading
 - **Cyberpunk Theme**: High-contrast, futuristic design for immersive learning
 
-Switch between themes using the theme toggle in the header navigation.
+Switch between themes using the theme switcher in the header navigation.
+
+## 🤖 AI Integration Features
+
+### Floating Chatbot
+- **Always Accessible**: Floating chat button in the bottom-right corner
+- **Context-Aware**: Understands cybersecurity topics and user progress
+- **Real-time Responses**: Powered by OpenAI GPT for instant assistance
+- **Multi-language Support**: Available in multiple languages for global accessibility
+
+### AI Cybersecurity Mentor
+- **Personalized Learning Paths**: AI-driven recommendations based on user progress
+- **Interactive Lab Guidance**: Step-by-step assistance during practical exercises
+- **Threat Intelligence**: Real-time updates on emerging cybersecurity threats
+- **Code Review**: AI-powered analysis of security-related code submissions
+- **Vulnerability Assessment**: Automated scanning and explanation of security issues
+
+### AI-Powered Features
+- **Smart Content Curation**: Personalized learning materials based on user interests
+- **Progress Analytics**: AI-driven insights into learning patterns and areas for improvement
+- **Security Quiz Generation**: Dynamic quiz creation based on user skill level
+- **Incident Response Simulation**: AI-generated realistic cybersecurity scenarios
 
 ## 📚 Learning Content
 
@@ -55,10 +89,18 @@ Switch between themes using the theme toggle in the header navigation.
 - **Advanced**: Malware analysis and threat intelligence
 
 ### Interactive Labs
-- Password Cracking Lab
-- Web Application Security
-- Network Reconnaissance
-- Malware Analysis (Coming Soon)
+- **Password Cracking Lab**: Learn about password security and cracking techniques
+- **Web Application Security**: Practice OWASP Top 10 vulnerabilities
+- **Network Reconnaissance**: Master network scanning and enumeration
+- **Malware Analysis**: Analyze and reverse engineer malicious software
+- **Incident Response**: Handle cybersecurity incidents with AI guidance
+- **Forensics Lab**: Digital forensics and evidence collection
+
+### AI-Enhanced Learning Modules
+- **Adaptive Difficulty**: AI adjusts complexity based on user performance
+- **Personalized Feedback**: Customized guidance for each learning objective
+- **Real-world Scenarios**: AI-generated realistic cybersecurity challenges
+- **Collaborative Learning**: AI-facilitated group exercises and discussions
 
 ## 🛠️ Built With
 
@@ -66,6 +108,9 @@ Switch between themes using the theme toggle in the header navigation.
 - **Tailwind CSS** - Utility-first CSS framework
 - **DaisyUI** - Component library for Tailwind CSS
 - **TypeScript** - Type-safe JavaScript
+- **OpenAI API** - GPT integration for AI-powered features
+- **Vercel AI SDK** - Streamlined AI integration
+- **WebSocket** - Real-time chat functionality
 
 ## 📁 Project Structure
 
@@ -76,15 +121,27 @@ cybershield/
 │   │   ├── theme.ts          # Theme management
 │   │   ├── navigation.ts     # Navigation configuration
 │   │   ├── themes.css        # Custom theme colors
+│   │   ├── ai/
+│   │   │   ├── chat.ts       # Chatbot functionality
+│   │   │   ├── mentor.ts     # AI mentor integration
+│   │   │   └── openai.ts     # OpenAI API utilities
 │   │   └── assets/           # Static assets
 │   ├── routes/
 │   │   ├── +layout.svelte    # Root layout
 │   │   ├── +page.svelte      # Landing page
 │   │   ├── Header.svelte     # Navigation header
 │   │   ├── About Us/         # About page
-│   │   └── Learning Lab/     # Learning content
+│   │   ├── Learning Lab/     # Learning content
+│   │   └── api/
+│   │       ├── chat/+server.ts # Chat API endpoint
+│   │       └── mentor/+server.ts # Mentor API endpoint
+│   ├── components/
+│   │   ├── ChatBot.svelte    # Floating chatbot component
+│   │   ├── AIMentor.svelte   # AI mentor interface
+│   │   └── LabGuide.svelte   # AI-powered lab guidance
 │   └── app.css               # Global styles
 ├── static/                   # Static files
+├── .env.example             # Environment variables template
 └── package.json
 ```
 
@@ -105,17 +162,18 @@ cybershield/
 - Theme switcher with visual indicators
 - Active page highlighting
 
-## 🔧 Customization
+### AI Integration (`src/lib/ai/`)
+- **Chat System**: Manages conversation state and OpenAI API calls
+- **Mentor Engine**: Provides contextual cybersecurity guidance
+- **API Utilities**: Handles OpenAI authentication and request formatting
 
-### Adding New Themes
-1. Define color variables in `src/lib/themes.css`
-2. Add theme option to `src/lib/theme.ts`
-3. Update the theme switcher in `Header.svelte`
+### Chatbot Component
+- Floating interface with smooth animations
+- Real-time message streaming
+- Context-aware responses
+- File upload support for code review
 
-### Adding New Pages
-1. Create new route folder in `src/routes/`
-2. Add navigation item to `src/lib/navigation.ts`
-3. Update header navigation if needed
+
 
 ## 📱 Responsive Design
 
@@ -124,38 +182,24 @@ The application is fully responsive with:
 - Collapsible navigation menu
 - Optimized layouts for all screen sizes
 - Touch-friendly interactions
+- Adaptive chatbot positioning
 
-## 🚀 Deployment
 
-### Build for Production
-```bash
-npm run build
-```
+**CyberShield** was developed for the GirlCode hackathon, focusing on:
 
-### Preview Production Build
-```bash
-npm run preview
-```
+- **Innovation**: First-of-its-kind AI-powered cybersecurity learning platform
+- **Accessibility**: Dual themes and responsive design for all users
+- **Education**: Comprehensive cybersecurity curriculum with hands-on labs
+- **AI Integration**: OpenAI-powered chatbot and mentor for personalized learning
+- **Real-world Application**: Practical skills for cybersecurity professionals
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the documentation in the About Us section
-- Review the learning materials in the Learning Lab
+### Technical Achievements
+- **Full-stack SvelteKit application** with TypeScript
+- **AI-powered learning assistance** using OpenAI GPT
+- **Real-time chat system** with WebSocket integration
+- **Responsive design** with dual theme system
+- **Comprehensive security labs** with AI guidance
 
 ---
 
-**CyberShield** - Empowering the next generation of cybersecurity professionals 🛡️
+**CyberShield** - Empowering the next generation of cybersecurity professionals with AI-powered learning 🛡️🤖

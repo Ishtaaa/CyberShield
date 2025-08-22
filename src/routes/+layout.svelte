@@ -2,6 +2,7 @@
 	import '../app.css';
 	import logo from '$lib/assets/logo.svg';
 	import Header from './Header.svelte';
+	import ChatBot from '../components/ChatBot.svelte';
 	import { theme } from '$lib/theme';
 	import { onMount } from 'svelte';
 
@@ -23,3 +24,6 @@
 </svelte:head>
 
 {@render children?.()}
+
+<!-- AI Chatbot - Always accessible -->
+<ChatBot />
