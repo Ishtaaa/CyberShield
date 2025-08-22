@@ -29,11 +29,48 @@
   async function askMentorQuestion() {
     if (!currentQuestion.trim() || !currentSession) return;
     
+    mentorStore.setLoading(true);
+    mentorStore.setError(null);
+    
     try {
-      await mentorStore.askQuestion(currentQuestion.trim());
+      // Pass the session info directly to avoid type issues
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: `You are a cybersecurity mentor specializing in ${currentSession.topic} for ${currentSession.skillLevel} level students. Provide clear, practical guidance.` },
+            { role: 'user', content: currentQuestion.trim() }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const aiResponse = await response.json();
+      const answer = aiResponse.content;
+
+      // Add the question and answer to the session
+      const mentorQuestion = {
+        id: crypto.randomUUID(),
+        question: currentQuestion.trim(),
+        answer: answer,
+        timestamp: new Date(),
+        status: 'answered' as const
+      };
+
+      // Update the store with the new question
+      mentorStore.addQuestion(mentorQuestion);
       currentQuestion = '';
     } catch (err) {
       console.error('Failed to ask question:', err);
+      mentorStore.setError(err instanceof Error ? err.message : 'Failed to get response');
+    } finally {
+      mentorStore.setLoading(false);
     }
   }
   
@@ -66,10 +103,10 @@
       <div class="grid md:grid-cols-2 gap-6">
         <!-- Topic Selection -->
         <div class="space-y-4">
-          <label class="form-control">
+          <div class="form-control">
             <div class="label">
               <span class="label-text font-semibold">Choose Your Topic</span>
-            </label>
+            </div>
             <select 
               bind:value={selectedTopic}
               class="select select-bordered w-full"
@@ -79,12 +116,12 @@
                 <option value={topic}>{topic}</option>
               {/each}
             </select>
-          </label>
+          </div>
           
-          <label class="form-control">
+          <div class="form-control">
             <div class="label">
               <span class="label-text font-semibold">Skill Level</span>
-            </label>
+            </div>
             <select 
               bind:value={selectedSkillLevel}
               class="select select-bordered w-full"
@@ -93,7 +130,7 @@
                 <option value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
               {/each}
             </select>
-          </label>
+          </div>
           
           <button
             class="btn btn-primary w-full"
@@ -151,9 +188,6 @@
             <h2 class="text-2xl font-bold mb-2">🎓 {currentSession.topic}</h2>
             <p class="text-primary-content/90">
               Skill Level: <span class="font-semibold">{currentSession.skillLevel}</span>
-              {#if currentSession.currentLab}
-                • Current Lab: <span class="font-semibold">{currentSession.currentLab}</span>
-              {/if}
             </p>
             <p class="text-primary-content/80 mt-2">
               Session started: {currentSession.createdAt.toLocaleDateString()}

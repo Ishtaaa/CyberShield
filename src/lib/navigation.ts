@@ -28,7 +28,7 @@ export const navigation: NavItem[] = [
     ]
   },
   {
-    label: 'Learning Lab',
+    label: 'Lab',
     href: '/Learning Lab'
   }
 ];

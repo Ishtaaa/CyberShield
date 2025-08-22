@@ -65,8 +65,8 @@ Switch between themes using the theme switcher in the header navigation.
 ### Floating Chatbot
 - **Always Accessible**: Floating chat button in the bottom-right corner
 - **Context-Aware**: Understands cybersecurity topics and user progress
-- **Real-time Responses**: Powered by OpenAI GPT for instant assistance
-- **Multi-language Support**: Available in multiple languages for global accessibility
+- **Direct AI Integration**: Simple OpenAI API calls for immediate responses
+- **Error Handling**: Graceful error handling with user-friendly messages
 
 ### AI Cybersecurity Mentor
 - **Personalized Learning Paths**: AI-driven recommendations based on user progress
@@ -74,12 +74,18 @@ Switch between themes using the theme switcher in the header navigation.
 - **Threat Intelligence**: Real-time updates on emerging cybersecurity threats
 - **Code Review**: AI-powered analysis of security-related code submissions
 - **Vulnerability Assessment**: Automated scanning and explanation of security issues
+- **Session Management**: Persistent learning sessions with progress tracking
+- **Adaptive Difficulty**: AI adjusts complexity based on user performance
+
+
 
 ### AI-Powered Features
 - **Smart Content Curation**: Personalized learning materials based on user interests
 - **Progress Analytics**: AI-driven insights into learning patterns and areas for improvement
 - **Security Quiz Generation**: Dynamic quiz creation based on user skill level
 - **Incident Response Simulation**: AI-generated realistic cybersecurity scenarios
+- **Health Monitoring**: Real-time AI service status monitoring
+- **Retry Logic**: Automatic retry with exponential backoff for failed requests
 
 ## 📚 Learning Content
 
@@ -88,13 +94,11 @@ Switch between themes using the theme switcher in the header navigation.
 - **Intermediate**: Penetration testing and vulnerability assessment
 - **Advanced**: Malware analysis and threat intelligence
 
-### Interactive Labs
-- **Password Cracking Lab**: Learn about password security and cracking techniques
-- **Web Application Security**: Practice OWASP Top 10 vulnerabilities
-- **Network Reconnaissance**: Master network scanning and enumeration
-- **Malware Analysis**: Analyze and reverse engineer malicious software
-- **Incident Response**: Handle cybersecurity incidents with AI guidance
-- **Forensics Lab**: Digital forensics and evidence collection
+### Interactive Lab Environment
+- **Secure Lab Environment**: Isolated, safe environment for hands-on cybersecurity training
+- **Real-time Lab Status**: Monitor lab performance, security, and availability
+- **Laptop Mockup Interface**: Intuitive visual interface using DaisyUI components
+- **AI-Powered Guidance**: Get assistance and guidance during lab exercises
 
 ### AI-Enhanced Learning Modules
 - **Adaptive Difficulty**: AI adjusts complexity based on user performance
@@ -121,10 +125,13 @@ cybershield/
 │   │   ├── theme.ts          # Theme management
 │   │   ├── navigation.ts     # Navigation configuration
 │   │   ├── themes.css        # Custom theme colors
+│   │   ├── config.ts         # Local configuration (API keys)
+│   │   ├── config.template.ts # Configuration template
 │   │   ├── ai/
 │   │   │   ├── chat.ts       # Chatbot functionality
 │   │   │   ├── mentor.ts     # AI mentor integration
-│   │   │   └── openai.ts     # OpenAI API utilities
+│   │   │   ├── openai.ts     # OpenAI API utilities
+│   │   │   └── config.ts     # AI configuration and utilities
 │   │   └── assets/           # Static assets
 │   ├── routes/
 │   │   ├── +layout.svelte    # Root layout
@@ -134,14 +141,17 @@ cybershield/
 │   │   ├── Learning Lab/     # Learning content
 │   │   └── api/
 │   │       ├── chat/+server.ts # Chat API endpoint
-│   │       └── mentor/+server.ts # Mentor API endpoint
+│   │       ├── mentor/+server.ts # Mentor API endpoint
+│   │       └── health/+server.ts # Health check endpoint
 │   ├── components/
 │   │   ├── ChatBot.svelte    # Floating chatbot component
 │   │   ├── AIMentor.svelte   # AI mentor interface
-│   │   └── LabGuide.svelte   # AI-powered lab guidance
+│   │   ├── ErrorBoundary.svelte # Error handling component
+│   │   ├── LoadingSpinner.svelte # Loading component
+│   │   └── AIStatusMonitor.svelte # AI service status monitor
 │   └── app.css               # Global styles
 ├── static/                   # Static files
-├── .env.example             # Environment variables template
+├── .gitignore               # Git ignore rules
 └── package.json
 ```
 
@@ -172,6 +182,19 @@ cybershield/
 - Real-time message streaming
 - Context-aware responses
 - File upload support for code review
+- Error handling with retry mechanisms
+- Rate limiting and request management
+
+### Error Handling Components
+- **ErrorBoundary**: Graceful error display with retry options
+- **LoadingSpinner**: Consistent loading states across the application
+- **AIStatusMonitor**: Real-time monitoring of AI service health
+
+### Enhanced AI Integration
+- **Rate Limiting**: Prevents API abuse and ensures smooth operation
+- **Retry Logic**: Automatic retry with exponential backoff
+- **Health Monitoring**: Continuous monitoring of AI service status
+- **Configuration Management**: Centralized AI configuration and model management
 
 
 

@@ -43,29 +43,29 @@ function createChatStore() {
       }));
 
       try {
-        // Get current messages for context
-        let currentMessages: ChatMessage[] = [];
-        subscribe(s => currentMessages = s.messages)();
-        
+        // Call OpenAI API directly
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: [...currentMessages, userMessage]
+            messages: [userMessage]
           })
         });
 
         if (!response.ok) {
-          throw new Error('Failed to get response from server');
+          throw new Error('Failed to get AI response');
         }
 
         const aiResponse = await response.json();
+        const answer = aiResponse.content;
+
+        const assistantMessage: ChatMessage = { role: 'assistant', content: answer };
         
         update(state => ({
           ...state,
-          messages: [...state.messages, aiResponse],
+          messages: [...state.messages, assistantMessage],
           isLoading: false
         }));
       } catch (error) {
@@ -87,6 +87,11 @@ function createChatStore() {
       ],
       error: null
     })),
+    
+    clearError: () => update(state => ({
+      ...state,
+      error: null
+    })),
 
     get: () => {
       let state: ChatState;
@@ -105,8 +110,6 @@ export const cybersecurityContext = {
     'Web Application Security',
     'Cryptography',
     'Malware Analysis',
-    'Incident Response',
-    'Digital Forensics',
     'Penetration Testing',
     'Security Architecture'
   ],

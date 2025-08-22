@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { chatStore } from '$lib/ai/chat';
   import { cybersecurityContext } from '$lib/ai/chat';
+  import ErrorBoundary from './ErrorBoundary.svelte';
+  import LoadingSpinner from './LoadingSpinner.svelte';
   
   let chatInput: HTMLInputElement;
   let chatContainer: HTMLDivElement;
@@ -40,6 +42,18 @@
   
   function clearChat() {
     chatStore.clearChat();
+  }
+  
+  function handleErrorRetry() {
+    // Clear the error and retry the last action
+    if (error) {
+      // Reset error state
+      chatStore.clearError();
+    }
+  }
+  
+  function handleErrorDismiss() {
+    chatStore.clearError();
   }
   
   onMount(() => {
@@ -83,6 +97,7 @@
           class="btn btn-ghost btn-sm text-primary-content"
           on:click={clearChat}
           title="Clear Chat"
+          aria-label="Clear chat history"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -92,6 +107,7 @@
           class="btn btn-ghost btn-sm text-primary-content"
           on:click={toggleChat}
           title="Close Chat"
+          aria-label="Close chat window"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -99,6 +115,13 @@
         </button>
       </div>
     </div>
+    
+    <!-- Error Display -->
+    <ErrorBoundary 
+      error={error} 
+      onRetry={handleErrorRetry}
+      on:dismiss={handleErrorDismiss}
+    />
     
     <!-- Chat Messages -->
     <div 
@@ -148,6 +171,7 @@
           class="btn btn-primary"
           on:click={sendMessage}
           disabled={isLoading}
+          aria-label="Send message"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />

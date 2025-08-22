@@ -1,11 +1,9 @@
 import { writable, type Writable } from 'svelte/store';
-import type { ChatResponse } from './openai';
 
 export interface MentorSession {
   id: string;
   topic: string;
   skillLevel: 'beginner' | 'intermediate' | 'advanced';
-  currentLab?: string;
   progress: string;
   questions: MentorQuestion[];
   recommendations: string[];
@@ -52,12 +50,11 @@ function createMentorStore() {
   return {
     subscribe,
     
-    startSession: (topic: string, skillLevel: 'beginner' | 'intermediate' | 'advanced', currentLab?: string) => {
+    startSession: (topic: string, skillLevel: 'beginner' | 'intermediate' | 'advanced') => {
       const session: MentorSession = {
         id: crypto.randomUUID(),
         topic,
         skillLevel,
-        currentLab,
         progress: 'Just starting',
         questions: [],
         recommendations: [],
@@ -73,133 +70,12 @@ function createMentorStore() {
       return session;
     },
 
-    askQuestion: async (question: string) => {
-      let currentSession: MentorSession | null;
-      
-      // Get current session state
-      subscribe(s => currentSession = s.currentSession)();
-      
-      if (!currentSession) {
-        throw new Error('No active mentor session');
-      }
-
-      update(state => ({ ...state, isLoading: true, error: null }));
-
-      try {
-        const mentorQuestion: MentorQuestion = {
-          id: crypto.randomUUID(),
-          question,
-          timestamp: new Date(),
-          status: 'asked'
-        };
-
-        // Add question to session
-        update(state => ({
-          ...state,
-          currentSession: state.currentSession ? {
-            ...state.currentSession,
-            questions: [...state.currentSession.questions, mentorQuestion],
-            lastActive: new Date()
-          } : null
-        }));
-
-        // Get AI response from server
-        const response = await fetch('/api/mentor', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            question,
-            topic: currentSession.topic,
-            skillLevel: currentSession.skillLevel,
-            currentLab: currentSession.currentLab,
-            progress: currentSession.progress
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to get mentor response');
-        }
-
-        const aiResponse = await response.json();
-
-        // Update question with answer
-        update(state => ({
-          ...state,
-          currentSession: state.currentSession ? {
-            ...state.currentSession,
-            questions: state.currentSession.questions.map(q => 
-              q.id === mentorQuestion.id 
-                ? { ...q, answer: aiResponse.content, status: 'answered' as const }
-                : q
-            ),
-            lastActive: new Date()
-          } : null,
-          isLoading: false
-        }));
-
-        return aiResponse;
-      } catch (error) {
-        update(state => ({
-          ...state,
-          isLoading: false,
-          error: error instanceof Error ? error.message : 'Failed to get mentor response'
-        }));
-        throw error;
-      }
+    setLoading: (loading: boolean) => {
+      update(state => ({ ...state, isLoading: loading }));
     },
 
-    getLabGuidance: async (labName: string, specificQuestion?: string) => {
-      update(state => ({ ...state, isLoading: true, error: null }));
-
-      try {
-        let currentSession: MentorSession | null;
-        subscribe(s => currentSession = s.currentSession)();
-        
-        if (!currentSession) {
-          throw new Error('No active mentor session');
-        }
-
-        const response = await fetch('/api/mentor', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            question: specificQuestion || `Help me with ${labName}`,
-            topic: currentSession.topic,
-            skillLevel: currentSession.skillLevel,
-            currentLab: labName,
-            progress: currentSession.progress
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to get lab guidance');
-        }
-
-        const aiResponse = await response.json();
-
-        update(state => ({
-          ...state,
-          currentSession: state.currentSession ? {
-            ...state.currentSession,
-            currentLab: labName,
-            lastActive: new Date()
-          } : null,
-          isLoading: false
-        }));
-
-        return response;
-      } catch (error) {
-        update(state => ({
-          ...state,
-          isLoading: false,
-          error: error instanceof Error ? error.message : 'Failed to get lab guidance'
-        }));
-        throw error;
-      }
+    setError: (error: string | null) => {
+      update(state => ({ ...state, error }));
     },
 
     updateProgress: (progress: string) => {
@@ -223,14 +99,19 @@ function createMentorStore() {
       }));
     },
 
-    endSession: () => {
-      update(state => ({ ...state, currentSession: null }));
+    addQuestion: (question: MentorQuestion) => {
+      update(state => ({
+        ...state,
+        currentSession: state.currentSession ? {
+          ...state.currentSession,
+          questions: [...state.currentSession.questions, question],
+          lastActive: new Date()
+        } : null
+      }));
     },
 
-    get: () => {
-      let state: MentorState;
-      subscribe(s => state = s)();
-      return state!;
+    endSession: () => {
+      update(state => ({ ...state, currentSession: null }));
     }
   };
 }
@@ -240,7 +121,7 @@ export const mentorStore = createMentorStore();
 // Mentor utilities
 export const mentorUtils = {
   generateLearningPath: (topic: string, skillLevel: string) => {
-    const paths = {
+    const paths: Record<string, Record<string, string[]>> = {
       'Network Security': {
         beginner: ['Network fundamentals', 'Basic protocols', 'Firewall basics'],
         intermediate: ['Network scanning', 'Protocol analysis', 'Advanced firewalls'],
@@ -253,11 +134,11 @@ export const mentorUtils = {
       }
     };
 
-    return paths[topic as keyof typeof paths]?.[skillLevel as keyof typeof paths[keyof typeof paths]] || [];
+    return paths[topic]?.[skillLevel] || [];
   },
 
   getTopicResources: (topic: string) => {
-    const resources = {
+    const resources: Record<string, string[]> = {
       'Network Security': [
         'Wireshark tutorials',
         'Nmap documentation',
@@ -270,6 +151,6 @@ export const mentorUtils = {
       ]
     };
 
-    return resources[topic as keyof typeof resources] || [];
+    return resources[topic] || [];
   }
 };

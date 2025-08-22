@@ -1,3 +1,5 @@
+import { RateLimiter, withRetry } from './config';
+
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -11,16 +13,23 @@ export interface ChatResponse {
 export class OpenAIAPI {
   private apiKey: string;
   private baseURL = 'https://api.openai.com/v1';
+  private rateLimiter: RateLimiter;
+  private maxRetries: number;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, maxRetries: number = 3, rateLimitDelay: number = 1000) {
     this.apiKey = apiKey;
+    this.maxRetries = maxRetries;
+    this.rateLimiter = new RateLimiter(rateLimitDelay);
+    
     if (!this.apiKey) {
       throw new Error('OpenAI API key is required');
     }
   }
 
   async chatCompletion(messages: ChatMessage[], model: string = 'gpt-3.5-turbo'): Promise<ChatResponse> {
-    try {
+    return withRetry(async () => {
+      await this.rateLimiter.waitForNextRequest();
+      
       const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -37,18 +46,21 @@ export class OpenAIAPI {
       });
 
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
       }
 
       const data = await response.json();
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error('Invalid response format from OpenAI API');
+      }
+      
       return {
         content: data.choices[0].message.content,
         role: 'assistant',
       };
-    } catch (error) {
-      console.error('OpenAI API error:', error);
-      throw new Error('Failed to get response from OpenAI');
-    }
+    }, this.maxRetries);
   }
 
   async cybersecurityMentor(
