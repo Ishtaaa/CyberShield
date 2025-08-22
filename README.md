@@ -42,6 +42,9 @@ cp src/lib/config.template.ts src/lib/config.ts
 
 # Edit src/lib/config.ts and add your OpenAI API key
 # Get your API key from: https://platform.openai.com/api-keys
+# 
+# IMPORTANT: Never commit your actual API key to version control!
+# The config.ts file is already added to .gitignore for security.
 ```
 
 4. Start the development server:

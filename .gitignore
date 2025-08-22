@@ -26,4 +26,10 @@ vite.config.ts.timestamp-*
 # Configuration files with sensitive data
 src/lib/config.ts
 
+# Environment files (except examples)
+.env
+.env.local
+.env.development
+.env.production
+
 
