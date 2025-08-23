@@ -1,3 +1,4 @@
+import OpenAI from 'openai';
 import { RateLimiter, withRetry } from './config';
 
 export interface ChatMessage {
@@ -11,53 +12,41 @@ export interface ChatResponse {
 }
 
 export class OpenAIAPI {
-  private apiKey: string;
-  private baseURL = 'https://api.openai.com/v1';
+  private client: OpenAI;
   private rateLimiter: RateLimiter;
   private maxRetries: number;
 
-  constructor(apiKey: string, maxRetries: number = 3, rateLimitDelay: number = 1000) {
-    this.apiKey = apiKey;
+  constructor(apiKey: string, maxRetries: number = 3, rateLimitDelay: number = 1000, baseURL?: string) {
+    if (!apiKey) {
+      throw new Error('Gemini API key is required');
+    }
+
+    this.client = new OpenAI({
+      apiKey: apiKey,
+      baseURL: baseURL || 'https://generativelanguage.googleapis.com/v1beta/openai/',
+    });
+    
     this.maxRetries = maxRetries;
     this.rateLimiter = new RateLimiter(rateLimitDelay);
-    
-    if (!this.apiKey) {
-      throw new Error('OpenAI API key is required');
-    }
   }
 
-  async chatCompletion(messages: ChatMessage[], model: string = 'gpt-3.5-turbo'): Promise<ChatResponse> {
+  async chatCompletion(messages: ChatMessage[], model: string = 'gemini-2.0-flash'): Promise<ChatResponse> {
     return withRetry(async () => {
       await this.rateLimiter.waitForNextRequest();
       
-      const response = await fetch(`${this.baseURL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          max_tokens: 1000,
-          temperature: 0.7,
-          stream: false,
-        }),
+      const response = await this.client.chat.completions.create({
+        model,
+        messages: messages as any, // OpenAI SDK types are compatible
+        max_tokens: 1000,
+        temperature: 0.7,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`OpenAI API error: ${response.status} ${response.statusText} - ${errorData.error?.message || ''}`);
-      }
-
-      const data = await response.json();
-      
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error('Invalid response format from OpenAI API');
+      if (!response.choices || !response.choices[0] || !response.choices[0].message) {
+        throw new Error('Invalid response format from Gemini API');
       }
       
       return {
-        content: data.choices[0].message.content,
+        content: response.choices[0].message.content || '',
         role: 'assistant',
       };
     }, this.maxRetries);
@@ -79,7 +68,7 @@ export class OpenAIAPI {
       { role: 'user', content: userQuery }
     ];
 
-    return this.chatCompletion(messages, 'gpt-4');
+    return this.chatCompletion(messages, 'gemini-2.0-flash');
   }
 
   async labGuidance(
@@ -102,7 +91,7 @@ export class OpenAIAPI {
       { role: 'user', content: userQuery }
     ];
 
-    return this.chatCompletion(messages, 'gpt-4');
+    return this.chatCompletion(messages, 'gemini-2.0-flash');
   }
 
   async codeReview(code: string, language: string = 'python'): Promise<ChatResponse> {
@@ -120,8 +109,6 @@ export class OpenAIAPI {
       { role: 'user', content: `Please review this ${language} code for security issues:\n\n${code}` }
     ];
 
-    return this.chatCompletion(messages, 'gpt-4');
+    return this.chatCompletion(messages, 'gemini-2.0-flash');
   }
 }
-
-// OpenAIAPI instances will be created as needed with proper API keys

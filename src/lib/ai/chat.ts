@@ -43,25 +43,28 @@ function createChatStore() {
       }));
 
       try {
-        // Call OpenAI API directly
+        // Get current state to access all messages
+        let currentState: ChatState;
+        subscribe(s => currentState = s)();
+        
+        // Send all messages for context
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: [userMessage]
+            messages: currentState!.messages
           })
         });
 
         if (!response.ok) {
-          throw new Error('Failed to get AI response');
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to get AI response');
         }
 
         const aiResponse = await response.json();
-        const answer = aiResponse.content;
-
-        const assistantMessage: ChatMessage = { role: 'assistant', content: answer };
+        const assistantMessage: ChatMessage = { role: 'assistant', content: aiResponse.content };
         
         update(state => ({
           ...state,

@@ -47,7 +47,7 @@ function createMentorStore() {
     skillLevels: ['beginner', 'intermediate', 'advanced']
   });
 
-  return {
+  const store = {
     subscribe,
     
     startSession: (topic: string, skillLevel: 'beginner' | 'intermediate' | 'advanced') => {
@@ -110,10 +110,145 @@ function createMentorStore() {
       }));
     },
 
+    askMentor: async (question: string, context?: string) => {
+      let currentState: MentorState;
+      subscribe(s => currentState = s)();
+      
+      if (!currentState!.currentSession) {
+        throw new Error('No active mentor session');
+      }
+
+      const session = currentState!.currentSession!;
+      
+      update(state => ({ ...state, isLoading: true, error: null }));
+
+      try {
+        const response = await fetch('/api/mentor', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'mentor',
+            userQuery: question,
+            context: context || `Topic: ${session.topic}, Progress: ${session.progress}`,
+            skillLevel: session.skillLevel
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to get mentor response');
+        }
+
+        const mentorResponse = await response.json();
+        
+        // Add the question and answer to the session
+        const mentorQuestion: MentorQuestion = {
+          id: crypto.randomUUID(),
+          question,
+          answer: mentorResponse.content,
+          timestamp: new Date(),
+          status: 'answered'
+        };
+
+        store.addQuestion(mentorQuestion);
+        
+        update(state => ({ ...state, isLoading: false }));
+        return mentorResponse.content;
+      } catch (error) {
+        update(state => ({
+          ...state,
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Failed to get mentor response'
+        }));
+        throw error;
+      }
+    },
+
+    getLabGuidance: async (labName: string, userProgress: string, specificQuestion?: string) => {
+      update(state => ({ ...state, isLoading: true, error: null }));
+
+      try {
+        const response = await fetch('/api/mentor', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'lab_guidance',
+            userQuery: specificQuestion || `Help me with ${labName}`,
+            labName,
+            userProgress,
+            specificQuestion
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to get lab guidance');
+        }
+
+        const guidanceResponse = await response.json();
+        update(state => ({ ...state, isLoading: false }));
+        return guidanceResponse.content;
+      } catch (error) {
+        update(state => ({
+          ...state,
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Failed to get lab guidance'
+        }));
+        throw error;
+      }
+    },
+
+    reviewCode: async (code: string, language: string = 'python') => {
+      update(state => ({ ...state, isLoading: true, error: null }));
+
+      try {
+        const response = await fetch('/api/mentor', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'code_review',
+            userQuery: `Review this ${language} code for security issues`,
+            code,
+            language
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to get code review');
+        }
+
+        const reviewResponse = await response.json();
+        update(state => ({ ...state, isLoading: false }));
+        return reviewResponse.content;
+      } catch (error) {
+        update(state => ({
+          ...state,
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Failed to get code review'
+        }));
+        throw error;
+      }
+    },
+
     endSession: () => {
       update(state => ({ ...state, currentSession: null }));
+    },
+
+    get: () => {
+      let state: MentorState;
+      subscribe(s => state = s)();
+      return state!;
     }
   };
+
+  return store;
 }
 
 export const mentorStore = createMentorStore();

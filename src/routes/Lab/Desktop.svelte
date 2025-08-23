@@ -75,7 +75,7 @@
           <div class="space-y-1">
            
           </div>
-          <input type="text" class="bg-transparent border-none text-xs w-full" placeholder="Enter text..." />
+          <input type="text" class="bg-transparent border-none text-xs w-full " placeholder="Enter text..." />
         </div>
       </div>
     {/if}
@@ -87,12 +87,12 @@
           handleSelector: '.window-bar',
           onPositionChange: handlePhonePositionChange
         }} 
-        class="absolute w-80 bg-trabsparent text-gray-800 "
+        class="absolute w-80 bg-transparent text-gray-800"
         style="left: {phonePos.x}px; top: {phonePos.y}px; z-index: 1000;"
       >
         
         <div class="p-4">
-          <div class="mockup-phone bg-transparent h-half">
+          <div class="mockup-phone bg-gradient-to-br from-primary via-secondary to-primary h-half">
             <div class="mockup-phone-camera"></div>
             <div class="mockup-phone-display text-white grid place-content-center">
               <div role="alert" class="alert alert-info">

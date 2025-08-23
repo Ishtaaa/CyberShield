@@ -9,6 +9,7 @@ export interface AIModelConfig {
 export interface AIServiceConfig {
   openai: {
     apiKey: string;
+    baseURL?: string;
     models: {
       [key: string]: AIModelConfig;
     };
@@ -23,23 +24,23 @@ export interface AIServiceConfig {
 
 // Available AI Models
 export const AI_MODELS: { [key: string]: AIModelConfig } = {
-  'gpt-3.5-turbo': {
-    name: 'GPT-3.5 Turbo',
+  'gemini-2.0-flash': {
+    name: 'Gemini 2.0 Flash',
     maxTokens: 1000,
     temperature: 0.7,
-    description: 'Fast and efficient for general cybersecurity guidance'
+    description: 'Fast and efficient Gemini model for general cybersecurity guidance'
   },
-  'gpt-4': {
-    name: 'GPT-4',
+  'gemini-2.0-pro': {
+    name: 'Gemini 2.0 Pro',
     maxTokens: 2000,
     temperature: 0.7,
-    description: 'Advanced reasoning for complex security analysis'
+    description: 'Advanced Gemini model for complex security analysis'
   },
-  'gpt-4-turbo': {
-    name: 'GPT-4 Turbo',
-    maxTokens: 4000,
+  'gemini-1.5-flash': {
+    name: 'Gemini 1.5 Flash',
+    maxTokens: 1000,
     temperature: 0.7,
-    description: 'Latest model with extended context for detailed analysis'
+    description: 'Fast Gemini model with good reasoning capabilities'
   }
 };
 
@@ -47,8 +48,9 @@ export const AI_MODELS: { [key: string]: AIModelConfig } = {
 export const DEFAULT_AI_CONFIG: AIServiceConfig = {
   openai: {
     apiKey: '',
+    baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
     models: AI_MODELS,
-    defaultModel: 'gpt-3.5-turbo'
+    defaultModel: 'gemini-2.0-flash'
   },
   app: {
     maxRetries: 3,
@@ -77,6 +79,10 @@ export class AIServiceManager {
     return this.config.openai.apiKey;
   }
   
+  getBaseURL(): string {
+    return this.config.openai.baseURL || 'https://generativelanguage.googleapis.com/v1beta/openai/';
+  }
+  
   getAppConfig() {
     return this.config.app;
   }
@@ -85,7 +91,7 @@ export class AIServiceManager {
     const errors: string[] = [];
     
     if (!this.config.openai.apiKey) {
-      errors.push('OpenAI API key is required');
+      errors.push('Gemini API key is required');
     }
     
     if (!this.config.openai.defaultModel) {

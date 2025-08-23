@@ -7,6 +7,8 @@
   
   let chatInput: HTMLInputElement;
   let chatContainer: HTMLDivElement;
+  let isUserScrolling = false;
+  let scrollTimeout: ReturnType<typeof setTimeout>;
   
   $: messages = $chatStore.messages;
   $: isOpen = $chatStore.isOpen;
@@ -56,16 +58,71 @@
     chatStore.clearError();
   }
   
-  onMount(() => {
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-  });
+  // Check if user is at the bottom of the chat
+  function isAtBottom() {
+    if (!chatContainer) return true;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainer;
+    return scrollTop + clientHeight >= scrollHeight - 10; // 10px tolerance
+  }
   
-  $: if (chatContainer && messages.length > 0) {
+  // Handle scroll events to detect user scrolling
+  function handleScroll() {
+    if (!chatContainer) return;
+    
+    // Clear previous timeout
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
+    }
+    
+    // Set user as scrolling
+    isUserScrolling = true;
+    
+    // Reset scrolling flag after user stops scrolling
+    scrollTimeout = setTimeout(() => {
+      isUserScrolling = false;
+    }, 150);
+  }
+  
+  // Smart scroll to bottom - only if user is already at bottom
+  function smartScrollToBottom() {
+    if (!chatContainer || isUserScrolling) return;
+    
+    // Only auto-scroll if user is already at the bottom
+    if (isAtBottom()) {
+      setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 100);
+    }
+  }
+  
+  // Force scroll to bottom (for new messages from user)
+  function forceScrollToBottom() {
+    if (!chatContainer) return;
     setTimeout(() => {
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }, 100);
+  }
+  
+  onMount(() => {
+    if (chatContainer) {
+      forceScrollToBottom();
+    }
+  });
+  
+  // Watch for new messages and scroll appropriately
+  $: if (chatContainer && messages.length > 0) {
+    // If it's a user message, always scroll to bottom
+    if (messages[messages.length - 1]?.role === 'user') {
+      forceScrollToBottom();
+    } else {
+      // For AI responses, use smart scrolling
+      smartScrollToBottom();
+    }
+  }
+  
+  // Watch for loading state changes
+  $: if (chatContainer && isLoading) {
+    smartScrollToBottom();
   }
 </script>
 
@@ -126,6 +183,7 @@
     <!-- Chat Messages -->
     <div 
       bind:this={chatContainer}
+      on:scroll={handleScroll}
       class="flex-1 overflow-y-auto p-4 space-y-4 bg-base-200"
     >
       {#each messages as message}
