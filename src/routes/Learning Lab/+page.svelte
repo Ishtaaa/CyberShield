@@ -62,9 +62,7 @@
 								<button class="btn btn-primary" on:click={() => navigateTo("/Lab")}>
 									🚀 Launch Lab
 								</button>
-								<button class="btn btn-outline">
-									📖 View Tutorial
-								</button>
+								
 							</div>
 						</div>
 					</div>
